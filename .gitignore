@@ -1,0 +1,30 @@
+# Credenciais e configurações sensíveis
+.env
+
+# Ambiente virtual Python
+anymarket_env/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Banco de dados local
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
