@@ -19,36 +19,65 @@ anymarket_client = AnymarketClient()
 def save_products_to_db(products_data: List[Dict], db: Session):
     """Salva produtos no banco de dados"""
     for product_data in products_data:
-        # Verifica se produto já existe
-        existing_product = db.query(models.Product).filter(
-            models.Product.anymarket_id == str(product_data.get("id"))
-        ).first()
+        try:
+            # Extrair valores seguros, lidando com objetos complexos
+            anymarket_id = str(product_data.get("id", ""))
+            title = product_data.get("title", "")
+            description = product_data.get("description", "")
+            price = float(product_data.get("price", 0))
+            
+            # Brand pode ser um dict ou string
+            brand_data = product_data.get("brand", "")
+            if isinstance(brand_data, dict):
+                brand = brand_data.get("name", "")
+            else:
+                brand = str(brand_data) if brand_data else ""
+            
+            # Category pode ser um dict ou string
+            category_data = product_data.get("category", "")
+            if isinstance(category_data, dict):
+                category = category_data.get("name", "")
+            else:
+                category = str(category_data) if category_data else ""
+            
+            model = product_data.get("model", "")
+            sku = product_data.get("sku", "")
+            stock_quantity = int(product_data.get("stockQuantity", 0))
+            
+            # Verifica se produto já existe
+            existing_product = db.query(models.Product).filter(
+                models.Product.anymarket_id == anymarket_id
+            ).first()
+            
+            if existing_product:
+                # Atualiza produto existente
+                existing_product.title = title
+                existing_product.description = description
+                existing_product.price = price
+                existing_product.brand = brand
+                existing_product.model = model
+                existing_product.category = category
+                existing_product.sku = sku
+                existing_product.stock_quantity = stock_quantity
+                existing_product.updated_at = datetime.now()
+            else:
+                # Cria novo produto
+                new_product = models.Product(
+                    anymarket_id=anymarket_id,
+                    title=title,
+                    description=description,
+                    price=price,
+                    brand=brand,
+                    model=model,
+                    category=category,
+                    sku=sku,
+                    stock_quantity=stock_quantity
+                )
+                db.add(new_product)
         
-        if existing_product:
-            # Atualiza produto existente
-            existing_product.title = product_data.get("title", "")
-            existing_product.description = product_data.get("description", "")
-            existing_product.price = float(product_data.get("price", 0))
-            existing_product.brand = product_data.get("brand", "")
-            existing_product.model = product_data.get("model", "")
-            existing_product.category = product_data.get("category", "")
-            existing_product.sku = product_data.get("sku", "")
-            existing_product.stock_quantity = int(product_data.get("stockQuantity", 0))
-            existing_product.updated_at = datetime.now()
-        else:
-            # Cria novo produto
-            new_product = models.Product(
-                anymarket_id=str(product_data.get("id")),
-                title=product_data.get("title", ""),
-                description=product_data.get("description", ""),
-                price=float(product_data.get("price", 0)),
-                brand=product_data.get("brand", ""),
-                model=product_data.get("model", ""),
-                category=product_data.get("category", ""),
-                sku=product_data.get("sku", ""),
-                stock_quantity=int(product_data.get("stockQuantity", 0))
-            )
-            db.add(new_product)
+        except (ValueError, TypeError) as e:
+            print(f"Erro ao processar produto {product_data.get('id')}: {e}")
+            continue
     
     db.commit()
 

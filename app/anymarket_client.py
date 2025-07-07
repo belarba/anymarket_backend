@@ -15,12 +15,17 @@ class AnymarketClient:
         self.gumgatoken = os.getenv("ANYMARKET_GUMGATOKEN")
         
         # Rate limiting: 60 requisições por minuto = 1 req/segundo
-        self.request_interval = 1.0  # 1 segundo entre requests
+        self.request_interval = 1.0
         self.last_request_time = 0
         
-        self.params = {
-            "gumgatoken": self.gumgatoken
+        # CORREÇÃO: Token vai no HEADER, não nos parâmetros
+        self.headers = {
+            "gumgaToken": self.gumgatoken,
+            "Content-Type": "application/json"
         }
+        
+        # Parâmetros da URL (sem o token agora)
+        self.params = {}
     
     def _wait_for_rate_limit(self):
         """Aguarda o tempo necessário para respeitar o rate limit"""
@@ -37,26 +42,25 @@ class AnymarketClient:
     def get_products(self, limit: int = 50, offset: int = 0) -> Dict:
         """Busca produtos da API Anymarket"""
         try:
-            self._wait_for_rate_limit()  # Adicionar rate limiting
+            self._wait_for_rate_limit()
             
             url = f"{self.base_url}/products"
             params = {
-                **self.params,
                 "limit": limit,
                 "offset": offset
             }
             
-            response = requests.get(url, params=params)
+            # CORREÇÃO: Token vai no header
+            response = requests.get(url, headers=self.headers, params=params)
             
-            # Se receber 429 (Too Many Requests), aguarda 60 segundos
             if response.status_code == 429:
                 logger.warning("Rate limit atingido. Aguardando 60 segundos...")
                 time.sleep(60)
-                response = requests.get(url, params=params)
+                response = requests.get(url, headers=self.headers, params=params)
             
             response.raise_for_status()
-            
             return response.json()
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Erro ao buscar produtos: {e}")
             return {"content": []}
@@ -64,26 +68,25 @@ class AnymarketClient:
     def get_orders(self, limit: int = 50, offset: int = 0) -> Dict:
         """Busca pedidos da API Anymarket"""
         try:
-            self._wait_for_rate_limit()  # Adicionar rate limiting
+            self._wait_for_rate_limit()
             
             url = f"{self.base_url}/orders"
             params = {
-                **self.params,
                 "limit": limit,
                 "offset": offset
             }
             
-            response = requests.get(url, params=params)
+            # CORREÇÃO: Token vai no header
+            response = requests.get(url, headers=self.headers, params=params)
             
-            # Se receber 429 (Too Many Requests), aguarda 60 segundos
             if response.status_code == 429:
                 logger.warning("Rate limit atingido. Aguardando 60 segundos...")
                 time.sleep(60)
-                response = requests.get(url, params=params)
+                response = requests.get(url, headers=self.headers, params=params)
             
             response.raise_for_status()
-            
             return response.json()
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Erro ao buscar pedidos: {e}")
             return {"content": []}
@@ -91,20 +94,21 @@ class AnymarketClient:
     def get_product_by_id(self, product_id: str) -> Optional[Dict]:
         """Busca um produto específico por ID"""
         try:
-            self._wait_for_rate_limit()  # Adicionar rate limiting
+            self._wait_for_rate_limit()
             
             url = f"{self.base_url}/products/{product_id}"
             
-            response = requests.get(url, params=self.params)
+            # CORREÇÃO: Token vai no header
+            response = requests.get(url, headers=self.headers)
             
             if response.status_code == 429:
                 logger.warning("Rate limit atingido. Aguardando 60 segundos...")
                 time.sleep(60)
-                response = requests.get(url, params=self.params)
+                response = requests.get(url, headers=self.headers)
             
             response.raise_for_status()
-            
             return response.json()
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Erro ao buscar produto {product_id}: {e}")
             return None
