@@ -2,51 +2,118 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-# Schemas para Products (mantidos iguais)
+# Schemas para Products - ULTRA EXPANDIDOS com Images, SKUs e Characteristics
 class ProductBase(BaseModel):
-    title: str
+    # Campos básicos
+    title: Optional[str] = None
     description: Optional[str] = None
     external_id_product: Optional[str] = None
+    
+    # Category expandida
     category_id: Optional[str] = None
     category_name: Optional[str] = None
     category_path: Optional[str] = None
+    
+    # Brand expandida
     brand_id: Optional[str] = None
     brand_name: Optional[str] = None
     brand_reduced_name: Optional[str] = None
     brand_partner_id: Optional[str] = None
+    
+    # NBM expandido
     nbm_id: Optional[str] = None
     nbm_description: Optional[str] = None
+    
+    # Origin expandido
     origin_id: Optional[str] = None
     origin_description: Optional[str] = None
+    
+    # Informações básicas do produto
     model: Optional[str] = None
     video_url: Optional[str] = None
     gender: Optional[str] = None
+    
+    # Garantia
     warranty_time: Optional[int] = None
     warranty_text: Optional[str] = None
+    
+    # Dimensões e peso
     height: Optional[float] = None
     width: Optional[float] = None
     weight: Optional[float] = None
     length: Optional[float] = None
+    
+    # Preços e configurações
     price_factor: Optional[float] = None
     calculated_price: Optional[bool] = False
     definition_price_scope: Optional[str] = None
+    
+    # Status e configurações do produto
     has_variations: Optional[bool] = False
     is_product_active: Optional[bool] = True
     product_type: Optional[str] = None
     allow_automatic_sku_marketplace_creation: Optional[bool] = True
-    characteristics: Optional[List[Dict[str, Any]]] = None
-    images: Optional[List[Dict[str, Any]]] = None
-    skus: Optional[List[Dict[str, Any]]] = None
+    
+    # ========================================================================
+    # IMAGES EXPANDIDAS (NOVOS CAMPOS)
+    # ========================================================================
+    image_id: Optional[str] = None
+    image_index: Optional[int] = None
+    image_main: Optional[bool] = None
+    image_url: Optional[str] = None
+    image_thumbnail_url: Optional[str] = None
+    image_low_resolution_url: Optional[str] = None
+    image_standard_url: Optional[str] = None
+    image_original_image: Optional[str] = None
+    image_status: Optional[str] = None
+    image_standard_width: Optional[int] = None
+    image_standard_height: Optional[int] = None
+    image_original_width: Optional[int] = None
+    image_original_height: Optional[int] = None
+    image_product_id: Optional[str] = None
+    total_images: Optional[int] = None
+    has_main_image: Optional[bool] = None
+    main_image_url: Optional[str] = None
+    
+    # ========================================================================
+    # SKUS EXPANDIDOS (NOVOS CAMPOS)
+    # ========================================================================
+    sku_id: Optional[str] = None
+    sku_title: Optional[str] = None
+    sku_partner_id: Optional[str] = None
+    sku_ean: Optional[str] = None
+    sku_price: Optional[float] = None
+    sku_amount: Optional[int] = None
+    sku_additional_time: Optional[int] = None
+    sku_stock_local_id: Optional[str] = None
+    total_skus: Optional[int] = None
+    min_price: Optional[float] = None
+    max_price: Optional[float] = None
+    total_stock: Optional[int] = None
+    avg_price: Optional[float] = None
+    has_stock: Optional[bool] = None
+    
+    # ========================================================================
+    # CHARACTERISTICS EXPANDIDAS (NOVOS CAMPOS)
+    # ========================================================================
+    characteristic_index: Optional[int] = None
+    characteristic_name: Optional[str] = None
+    characteristic_value: Optional[str] = None
+    total_characteristics: Optional[int] = None
+    has_characteristics: Optional[bool] = None
+    
+    # Campos legados (compatibilidade)
     sku: Optional[str] = None
     price: Optional[float] = None
     stock_quantity: Optional[int] = 0
     active: Optional[bool] = True
-    main_image_url: Optional[str] = None
-    total_images: Optional[int] = 0
-    total_skus: Optional[int] = 0
-    min_price: Optional[float] = None
-    max_price: Optional[float] = None
-    total_stock: Optional[int] = 0
+    
+    # Dados JSON completos
+    characteristics: Optional[List[Dict[str, Any]]] = None
+    images: Optional[List[Dict[str, Any]]] = None
+    skus: Optional[List[Dict[str, Any]]] = None
+    
+    # Status de sincronização
     sync_status: Optional[str] = "pending"
     sync_error_message: Optional[str] = None
     last_sync_date: Optional[datetime] = None
@@ -68,21 +135,102 @@ class ProductSummary(BaseModel):
     id: int
     anymarket_id: str
     title: str
-    sku: Optional[str]
+    sku_partner_id: Optional[str]
     brand_name: Optional[str]
     category_name: Optional[str]
-    price: Optional[float]
-    stock_quantity: Optional[int]
+    sku_price: Optional[float]
+    sku_amount: Optional[int]
     total_skus: Optional[int]
+    total_images: Optional[int]
     has_variations: Optional[bool]
     active: Optional[bool]
     sync_status: Optional[str]
+    main_image_url: Optional[str]
     created_at: datetime
 
     class Config:
         from_attributes = True
 
-# Schemas para Orders - ULTRA EXPANDIDOS com Items e Payments
+# Schemas específicos para Images expandidas
+class ProductImage(BaseModel):
+    anymarket_id: Optional[str]
+    image_id: Optional[str]
+    image_main: Optional[bool]
+    image_url: Optional[str]
+    image_thumbnail_url: Optional[str]
+    image_standard_url: Optional[str]
+    image_original_image: Optional[str]
+    image_status: Optional[str]
+    image_standard_width: Optional[int]
+    image_standard_height: Optional[int]
+    total_images: Optional[int]
+    has_main_image: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+# Schemas específicos para SKUs expandidos
+class ProductSku(BaseModel):
+    anymarket_id: Optional[str]
+    sku_id: Optional[str]
+    sku_title: Optional[str]
+    sku_partner_id: Optional[str]
+    sku_ean: Optional[str]
+    sku_price: Optional[float]
+    sku_amount: Optional[int]
+    sku_additional_time: Optional[int]
+    sku_stock_local_id: Optional[str]
+    total_skus: Optional[int]
+    min_price: Optional[float]
+    max_price: Optional[float]
+    total_stock: Optional[int]
+    avg_price: Optional[float]
+    has_stock: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+# Schemas específicos para Characteristics expandidas
+class ProductCharacteristic(BaseModel):
+    anymarket_id: Optional[str]
+    characteristic_index: Optional[int]
+    characteristic_name: Optional[str]
+    characteristic_value: Optional[str]
+    total_characteristics: Optional[int]
+    has_characteristics: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+# Schema para estatísticas detalhadas
+class ProductImageStats(BaseModel):
+    status: str
+    count: int
+    total_images: int
+
+class ProductSkuStats(BaseModel):
+    stock_local_id: str
+    count: int
+    total_stock: int
+    avg_price: float
+
+class ProductCharacteristicStats(BaseModel):
+    name: str
+    value: str
+    count: int
+
+class ProductStatisticsDetailed(BaseModel):
+    products: Dict[str, int]
+    images: Dict[str, int]
+    skus: Dict[str, float]
+    characteristics: Dict[str, int]
+    top_brands: List[Dict[str, Any]]
+    top_categories: List[Dict[str, Any]]
+    top_image_statuses: List[ProductImageStats]
+    top_stock_locations: List[ProductSkuStats]
+    top_characteristics: List[ProductCharacteristicStats]
+
+# Manter os schemas de Order inalterados (já estão completos)
 class OrderBase(BaseModel):
     # Campos básicos
     anymarket_id: Optional[str] = None
@@ -168,9 +316,7 @@ class OrderBase(BaseModel):
     tracking_buffering_date: Optional[datetime] = None
     tracking_delivery_status: Optional[str] = None
     
-    # ========================================================================
-    # ITEMS EXPANDIDOS (NOVOS CAMPOS)
-    # ========================================================================
+    # ITEMS EXPANDIDOS
     item_product_id: Optional[str] = None
     item_product_title: Optional[str] = None
     item_sku_id: Optional[str] = None
@@ -198,9 +344,7 @@ class OrderBase(BaseModel):
     total_items_amount: Optional[float] = None
     total_items_value: Optional[float] = None
     
-    # ========================================================================
-    # PAYMENTS EXPANDIDOS (NOVOS CAMPOS)
-    # ========================================================================
+    # PAYMENTS EXPANDIDOS
     payment_method: Optional[str] = None
     payment_status: Optional[str] = None
     payment_value: Optional[float] = None

@@ -5,59 +5,149 @@ from .database import Base
 class Product(Base):
     __tablename__ = "products"
     
-    # [Manter a estrutura de produtos como está - não alterada]
+    # Campos básicos
     id = Column(Integer, primary_key=True, index=True)
     anymarket_id = Column(String, unique=True, index=True)
     title = Column(String)
     description = Column(Text)
     external_id_product = Column(String)
+    
+    # Category expandida (objeto category → colunas individuais)
     category_id = Column(String)
     category_name = Column(String)
     category_path = Column(String)
+    
+    # Brand expandida (objeto brand → colunas individuais)
     brand_id = Column(String)
     brand_name = Column(String)
     brand_reduced_name = Column(String)
     brand_partner_id = Column(String)
+    
+    # NBM expandido (objeto nbm → colunas individuais)
     nbm_id = Column(String)
     nbm_description = Column(String)
+    
+    # Origin expandido (objeto origin → colunas individuais)
     origin_id = Column(String)
     origin_description = Column(String)
+    
+    # Informações básicas do produto
     model = Column(String)
     video_url = Column(String)
     gender = Column(String)
+    
+    # Garantia
     warranty_time = Column(Integer)
     warranty_text = Column(Text)
+    
+    # Dimensões e peso
     height = Column(Float)
     width = Column(Float)
     weight = Column(Float)
     length = Column(Float)
+    
+    # Preços e configurações
     price_factor = Column(Float)
     calculated_price = Column(Boolean, default=False)
     definition_price_scope = Column(String)
+    
+    # Status e configurações do produto
     has_variations = Column(Boolean, default=False)
     is_product_active = Column(Boolean, default=True)
     product_type = Column(String)
     allow_automatic_sku_marketplace_creation = Column(Boolean, default=True)
-    characteristics = Column(JSON)
-    images = Column(JSON)
-    skus = Column(JSON)
-    sku = Column(String, index=True)
-    price = Column(Float)
-    stock_quantity = Column(Integer, default=0)
-    active = Column(Boolean, default=True)
-    main_image_url = Column(String)
-    total_images = Column(Integer, default=0)
-    total_skus = Column(Integer, default=0)
-    min_price = Column(Float)
-    max_price = Column(Float)
-    total_stock = Column(Integer, default=0)
+    
+    # ========================================================================
+    # IMAGES EXPANDIDAS - Primeira imagem do array images
+    # ========================================================================
+    
+    # Image principal (images[0])
+    image_id = Column(String)  # images[0].id
+    image_index = Column(Integer)  # images[0].index
+    image_main = Column(Boolean, default=False)  # images[0].main
+    image_url = Column(String)  # images[0].url
+    image_thumbnail_url = Column(String)  # images[0].thumbnailUrl
+    image_low_resolution_url = Column(String)  # images[0].lowResolutionUrl
+    image_standard_url = Column(String)  # images[0].standardUrl
+    image_original_image = Column(String)  # images[0].originalImage
+    image_status = Column(String)  # images[0].status
+    image_standard_width = Column(Integer)  # images[0].standardWidth
+    image_standard_height = Column(Integer)  # images[0].standardHeight
+    image_original_width = Column(Integer)  # images[0].originalWidth
+    image_original_height = Column(Integer)  # images[0].originalHeight
+    image_product_id = Column(String)  # images[0].productId
+    
+    # Campos derivados das images
+    total_images = Column(Integer, default=0)  # Total de imagens
+    has_main_image = Column(Boolean, default=False)  # Tem imagem principal
+    main_image_url = Column(String)  # URL da imagem principal
+    
+    # ========================================================================
+    # SKUS EXPANDIDOS - Primeiro SKU do array skus
+    # ========================================================================
+    
+    # SKU principal (skus[0])
+    sku_id = Column(String)  # skus[0].id
+    sku_title = Column(String)  # skus[0].title
+    sku_partner_id = Column(String)  # skus[0].partnerId
+    sku_ean = Column(String)  # skus[0].ean
+    sku_price = Column(Float)  # skus[0].price
+    sku_amount = Column(Integer)  # skus[0].amount
+    sku_additional_time = Column(Integer)  # skus[0].additionalTime
+    sku_stock_local_id = Column(String)  # skus[0].stockLocalId
+    
+    # Campos derivados dos SKUs
+    total_skus = Column(Integer, default=0)  # Total de SKUs
+    min_price = Column(Float)  # Menor preço entre SKUs
+    max_price = Column(Float)  # Maior preço entre SKUs
+    total_stock = Column(Integer, default=0)  # Soma do estoque de todos os SKUs
+    avg_price = Column(Float)  # Preço médio dos SKUs
+    has_stock = Column(Boolean, default=False)  # Tem estoque disponível
+    
+    # ========================================================================
+    # CHARACTERISTICS EXPANDIDAS - Primeira característica do array characteristics
+    # ========================================================================
+    
+    # Characteristic principal (characteristics[0])
+    characteristic_index = Column(Integer)  # characteristics[0].index
+    characteristic_name = Column(String)  # characteristics[0].name
+    characteristic_value = Column(String)  # characteristics[0].value
+    
+    # Campos derivados das characteristics
+    total_characteristics = Column(Integer, default=0)  # Total de características
+    has_characteristics = Column(Boolean, default=False)  # Tem características
+    
+    # ========================================================================
+    # CAMPOS DERIVADOS PARA FACILITAR CONSULTAS
+    # ========================================================================
+    
+    # Campos legados (compatibilidade)
+    sku = Column(String, index=True)  # SKU principal (sku_partner_id)
+    price = Column(Float)  # Preço principal (sku_price)
+    stock_quantity = Column(Integer, default=0)  # Estoque principal (sku_amount)
+    active = Column(Boolean, default=True)  # Produto ativo
+    
+    # ========================================================================
+    # DADOS JSON COMPLETOS (para referência completa)
+    # ========================================================================
+    characteristics = Column(JSON)  # Array completo de características
+    images = Column(JSON)  # Array completo de imagens
+    skus = Column(JSON)  # Array completo de SKUs
+    
+    # Status de sincronização
     sync_status = Column(String, default="pending")
     sync_error_message = Column(Text)
     last_sync_date = Column(DateTime)
     last_sync_attempt = Column(DateTime)
+    
+    # Metadados do sistema
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    def __repr__(self):
+        return f"<Product(anymarket_id='{self.anymarket_id}', title='{self.title}', price={self.price})>"
 
+# Manter a classe Order inalterada (já está completa)
 class Order(Base):
     __tablename__ = "orders"
     
@@ -219,72 +309,50 @@ class Order(Base):
     metadata_order_type_name = Column(String)
     metadata_shipping_id = Column(String)
     
-    # ========================================================================
-    # ITEMS EXPANDIDOS - Primeiro item do array items_data
-    # ========================================================================
+    # ITEMS EXPANDIDOS
+    item_product_id = Column(String)
+    item_product_title = Column(String)
+    item_sku_id = Column(String)
+    item_sku_title = Column(String)
+    item_sku_partner_id = Column(String)
+    item_sku_ean = Column(String)
+    item_amount = Column(Float)
+    item_unit = Column(Float)
+    item_gross = Column(Float)
+    item_total = Column(Float)
+    item_discount = Column(Float)
+    item_id_in_marketplace = Column(String)
+    item_order_item_id = Column(String)
+    item_free_shipping = Column(Boolean, default=False)
+    item_is_catalog = Column(Boolean, default=False)
+    item_id_in_marketplace_catalog_origin = Column(String)
+    item_shipping_id = Column(String)
+    item_shipping_type = Column(String)
+    item_shipping_carrier_normalized = Column(String)
+    item_shipping_carrier_type_normalized = Column(String)
+    item_stock_local_id = Column(String)
+    item_stock_amount = Column(Float)
+    item_stock_name = Column(String)
+    total_items = Column(Integer, default=0)
+    total_items_amount = Column(Float, default=0)
+    total_items_value = Column(Float, default=0)
     
-    # Item Product (items[0].product)
-    item_product_id = Column(String)  # items[0].product.id
-    item_product_title = Column(String)  # items[0].product.title
+    # PAYMENTS EXPANDIDOS
+    payment_method = Column(String)
+    payment_status = Column(String)
+    payment_value = Column(Float)
+    payment_marketplace_id = Column(String)
+    payment_method_normalized = Column(String)
+    payment_detail_normalized = Column(String)
+    total_payments = Column(Integer, default=0)
+    total_payments_value = Column(Float, default=0)
     
-    # Item SKU (items[0].sku)
-    item_sku_id = Column(String)  # items[0].sku.id
-    item_sku_title = Column(String)  # items[0].sku.title
-    item_sku_partner_id = Column(String)  # items[0].sku.partnerId
-    item_sku_ean = Column(String)  # items[0].sku.ean
-    
-    # Item valores (items[0])
-    item_amount = Column(Float)  # items[0].amount
-    item_unit = Column(Float)  # items[0].unit
-    item_gross = Column(Float)  # items[0].gross
-    item_total = Column(Float)  # items[0].total
-    item_discount = Column(Float)  # items[0].discount
-    item_id_in_marketplace = Column(String)  # items[0].idInMarketPlace
-    item_order_item_id = Column(String)  # items[0].orderItemId
-    item_free_shipping = Column(Boolean, default=False)  # items[0].freeShipping
-    item_is_catalog = Column(Boolean, default=False)  # items[0].isCatalog
-    item_id_in_marketplace_catalog_origin = Column(String)  # items[0].idInMarketplaceCatalogOrigin
-    
-    # Item Shipping (items[0].shippings[0]) - primeiro shipping do primeiro item
-    item_shipping_id = Column(String)  # items[0].shippings[0].id
-    item_shipping_type = Column(String)  # items[0].shippings[0].shippingtype
-    item_shipping_carrier_normalized = Column(String)  # items[0].shippings[0].shippingCarrierNormalized
-    item_shipping_carrier_type_normalized = Column(String)  # items[0].shippings[0].shippingCarrierTypeNormalized
-    
-    # Item Stock (items[0].stocks[0]) - primeiro stock do primeiro item
-    item_stock_local_id = Column(String)  # items[0].stocks[0].stockLocalId
-    item_stock_amount = Column(Float)  # items[0].stocks[0].amount
-    item_stock_name = Column(String)  # items[0].stocks[0].stockName
-    
-    # Campos derivados dos items
-    total_items = Column(Integer, default=0)  # Total de itens no pedido
-    total_items_amount = Column(Float, default=0)  # Soma de todos os amounts
-    total_items_value = Column(Float, default=0)  # Soma de todos os totals
-    
-    # ========================================================================
-    # PAYMENTS EXPANDIDOS - Primeiro payment do array payments_data
-    # ========================================================================
-    
-    # Payment principal (payments[0])
-    payment_method = Column(String)  # payments[0].method
-    payment_status = Column(String)  # payments[0].status
-    payment_value = Column(Float)  # payments[0].value
-    payment_marketplace_id = Column(String)  # payments[0].marketplaceId
-    payment_method_normalized = Column(String)  # payments[0].paymentMethodNormalized
-    payment_detail_normalized = Column(String)  # payments[0].paymentDetailNormalized
-    
-    # Campos derivados dos payments
-    total_payments = Column(Integer, default=0)  # Total de formas de pagamento
-    total_payments_value = Column(Float, default=0)  # Soma de todos os values
-    
-    # ========================================================================
-    # DADOS JSON COMPLETOS (para casos que precisam de todos os itens/payments)
-    # ========================================================================
-    items_data = Column(JSON)  # Array completo de items
-    payments_data = Column(JSON)  # Array completo de payments
-    shippings_data = Column(JSON)  # Array de shippings
-    stocks_data = Column(JSON)  # Array de stocks
-    metadata_extra = Column(JSON)  # Metadata completo
+    # DADOS JSON COMPLETOS
+    items_data = Column(JSON)
+    payments_data = Column(JSON)
+    shippings_data = Column(JSON)
+    stocks_data = Column(JSON)
+    metadata_extra = Column(JSON)
     
     # Metadados do sistema
     created_at = Column(DateTime(timezone=True), server_default=func.now())
