@@ -73,7 +73,7 @@ class AnymarketClient:
             url = f"{self.base_url}/orders"
             params = {
                 "limit": limit,
-                "offset": offset
+                "offset": offset,
             }
             
             # CORREÇÃO: Token vai no header
