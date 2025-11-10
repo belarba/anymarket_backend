@@ -360,3 +360,151 @@ class Order(Base):
     
     def __repr__(self):
         return f"<Order(anymarket_id='{self.anymarket_id}', status='{self.status}', total={self.total})>"
+
+class Stock(Base):
+    __tablename__ = "stocks"
+    
+    # Campos básicos
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Stock Keeping Unit (SKU) expandido
+    sku_id = Column(String, index=True)
+    sku_title = Column(String)
+    sku_partner_id = Column(String, index=True)
+    
+    # Stock Local expandido
+    stock_local_id = Column(String, index=True)
+    stock_local_oi_value = Column(String)
+    stock_local_name = Column(String)
+    stock_local_virtual = Column(Boolean, default=False)
+    stock_local_default_local = Column(Boolean, default=False)
+    stock_local_priority_points = Column(Integer)
+    
+    # Quantidades
+    amount = Column(Integer, default=0)
+    reservation_amount = Column(Integer, default=0)
+    available_amount = Column(Integer, default=0)
+    
+    # Informações adicionais
+    price = Column(Float)
+    active = Column(Boolean, default=True)
+    additional_time = Column(Integer, default=0)
+    last_stock_update = Column(String)
+    last_stock_update_parsed = Column(DateTime)
+    
+    # Dados JSON completos para referência
+    stock_keeping_unit_data = Column(JSON)
+    stock_local_data = Column(JSON)
+    
+    # Chave única composta (sku_id + stock_local_id)
+    sku_stock_key = Column(String, unique=True, index=True)
+    
+    # Status de sincronização
+    sync_status = Column(String, default="pending")
+    sync_error_message = Column(Text)
+    last_sync_date = Column(DateTime)
+    
+    # Metadados do sistema
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    def __repr__(self):
+        return f"<Stock(sku_id='{self.sku_id}', stock_local='{self.stock_local_name}', amount={self.amount})>"
+
+
+class SkuMarketplace(Base):
+    __tablename__ = "sku_marketplaces"
+    
+    # Campos básicos
+    id = Column(Integer, primary_key=True, index=True)
+    anymarket_id = Column(String, index=True)
+    
+    # Informações da conta
+    account_name = Column(String)
+    id_account = Column(Integer)
+    
+    # Marketplace
+    marketplace = Column(String, index=True)
+    id_in_marketplace = Column(String, index=True)
+    index_field = Column(Integer)  # Renomeado de 'index' para evitar conflito
+    
+    # Status
+    publication_status = Column(String, index=True)
+    marketplace_status = Column(String)
+    
+    # Preços
+    price = Column(Float)
+    price_factor = Column(Float)
+    discount_price = Column(Float)
+    
+    # Links e identificadores
+    permalink = Column(String)
+    sku_in_marketplace = Column(String)
+    marketplace_item_code = Column(String)
+    
+    # Fields expandidos (principais)
+    field_title = Column(String)
+    field_template = Column(Integer)
+    field_price_factor = Column(String)
+    field_discount_type = Column(String)
+    field_discount_value = Column(String)
+    field_has_discount = Column(Boolean)
+    field_concat_attributes = Column(String)
+    field_delivery_type = Column(String)
+    field_shipment = Column(String)
+    field_cross_docking = Column(String)
+    field_custom_description = Column(Text)
+    field_ean = Column(String)
+    field_manufacturing_time = Column(String)
+    field_value = Column(String)
+    field_percent = Column(String)
+    
+    # Mercado Livre specific fields
+    field_bronze_price = Column(String)
+    field_bronze_price_factor = Column(String)
+    field_buying_mode = Column(String)
+    field_category_with_variation = Column(String)
+    field_condition = Column(String)
+    field_free_price = Column(String)
+    field_free_price_factor = Column(String)
+    field_free_shipping = Column(Boolean)
+    field_gold_premium_price = Column(String)
+    field_gold_premium_price_factor = Column(String)
+    field_gold_price = Column(String)
+    field_gold_price_factor = Column(String)
+    field_gold_pro_price = Column(String)
+    field_gold_pro_price_factor = Column(String)
+    field_gold_special_price = Column(String)
+    field_gold_special_price_factor = Column(String)
+    field_listing_type_id = Column(String)
+    field_shipping_local_pick_up = Column(Boolean)
+    field_shipping_mode = Column(String)
+    field_silver_price = Column(String)
+    field_silver_price_factor = Column(String)
+    field_measurement_chart_id = Column(String)
+    field_warranty_time = Column(String)
+    field_has_fulfillment = Column(Boolean)
+    field_official_store_id = Column(String)
+    field_ml_channels = Column(String)
+    field_is_main_sku = Column(Boolean)
+    field_is_match = Column(Boolean)
+    
+    # Dados JSON completos
+    fields_data = Column(JSON)
+    attributes_data = Column(JSON)
+    warnings = Column(JSON)
+    
+    # Chave única composta (anymarket_id + marketplace + id_in_marketplace)
+    sku_marketplace_key = Column(String, unique=True, index=True)
+    
+    # Status de sincronização
+    sync_status = Column(String, default="pending")
+    sync_error_message = Column(Text)
+    last_sync_date = Column(DateTime)
+    
+    # Metadados do sistema
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    def __repr__(self):
+        return f"<SkuMarketplace(id='{self.anymarket_id}', marketplace='{self.marketplace}', status='{self.publication_status}')>"

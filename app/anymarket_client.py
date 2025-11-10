@@ -112,3 +112,56 @@ class AnymarketClient:
         except requests.exceptions.RequestException as e:
             logger.error(f"Erro ao buscar produto {product_id}: {e}")
             return None
+
+    def get_stocks(self, limit: int = 50, offset: int = 0) -> Dict:
+        """Busca stocks da API Anymarket"""
+        try:
+            self._wait_for_rate_limit()
+            
+            url = f"{self.base_url}/stocks"
+            params = {
+                "limit": limit,
+                "offset": offset
+            }
+            
+            response = requests.get(url, headers=self.headers, params=params)
+            
+            if response.status_code == 429:
+                logger.warning("Rate limit atingido. Aguardando 60 segundos...")
+                time.sleep(60)
+                response = requests.get(url, headers=self.headers, params=params)
+            
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Erro ao buscar stocks: {e}")
+            return {"content": []}
+    
+    def get_sku_marketplaces(self, limit: int = 50, offset: int = 0) -> List[Dict]:
+        """
+        Busca SKUs de marketplaces da API Anymarket
+        Nota: Este endpoint retorna uma lista direta, não um objeto com paginação
+        """
+        try:
+            self._wait_for_rate_limit()
+            
+            url = f"{self.base_url}/skus/marketplaces"
+            params = {
+                "limit": limit,
+                "offset": offset
+            }
+            
+            response = requests.get(url, headers=self.headers, params=params)
+            
+            if response.status_code == 429:
+                logger.warning("Rate limit atingido. Aguardando 60 segundos...")
+                time.sleep(60)
+                response = requests.get(url, headers=self.headers, params=params)
+            
+            response.raise_for_status()
+            return response.json()  # Retorna lista diretamente
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Erro ao buscar SKU marketplaces: {e}")
+            return []

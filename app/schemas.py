@@ -441,3 +441,37 @@ class OrderStatisticsDetailed(BaseModel):
     payments: Dict[str, float]
     top_products: List[OrderItemStats]
     top_payment_methods: List[OrderPaymentStats]
+
+# Schemas para Stock
+class StockBase(BaseModel):
+    sku_id: Optional[str] = None
+    sku_partner_id: Optional[str] = None
+    stock_local_name: Optional[str] = None
+    amount: Optional[int] = 0
+    available_amount: Optional[int] = 0
+    price: Optional[float] = None
+    active: Optional[bool] = True
+
+class Stock(StockBase):
+    id: int
+    sku_stock_key: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class SkuMarketplaceBase(BaseModel):
+    anymarket_id: Optional[str] = None
+    marketplace: Optional[str] = None
+    publication_status: Optional[str] = None
+    price: Optional[float] = None
+    field_title: Optional[str] = None
+    field_ean: Optional[str] = None
+
+class SkuMarketplace(SkuMarketplaceBase):
+    id: int
+    sku_marketplace_key: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
