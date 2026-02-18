@@ -138,15 +138,41 @@ class AnymarketClient:
             logger.error(f"Erro ao buscar stocks: {e}")
             return {"content": []}
     
-    def get_sku_marketplaces(self, limit: int = 50, offset: int = 0) -> List[Dict]:
-        """
-        Busca SKUs de marketplaces da API Anymarket
-        Nota: Este endpoint retorna uma lista direta, não um objeto com paginação
-        """
+    def get_sku_marketplaces(self, partner_id: str, limit: int = 50, offset: int = 0) -> List[Dict]:
         try:
             self._wait_for_rate_limit()
             
             url = f"{self.base_url}/skus/marketplaces"
+            params = {
+                "partnerID": partner_id,
+                "limit": limit,
+                "offset": offset
+            }
+            
+            response = requests.get(url, headers=self.headers, params=params)
+            
+            if response.status_code == 429:
+                logger.warning("Rate limit atingido. Aguardando 60 segundos...")
+                time.sleep(60)
+                response = requests.get(url, headers=self.headers, params=params)
+            
+            if response.status_code == 400:
+                logger.warning(f"Bad request para partnerId: {partner_id}")
+                return []
+            
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Erro ao buscar SKU marketplaces para {partner_id}: {e}")
+            return []
+        
+    def get_transmissions(self, limit: int = 50, offset: int = 0) -> Dict:
+        """Busca transmissões da API Anymarket"""
+        try:
+            self._wait_for_rate_limit()
+            
+            url = f"{self.base_url}/transmissions"
             params = {
                 "limit": limit,
                 "offset": offset
@@ -160,8 +186,8 @@ class AnymarketClient:
                 response = requests.get(url, headers=self.headers, params=params)
             
             response.raise_for_status()
-            return response.json()  # Retorna lista diretamente
+            return response.json()
             
         except requests.exceptions.RequestException as e:
-            logger.error(f"Erro ao buscar SKU marketplaces: {e}")
-            return []
+            logger.error(f"Erro ao buscar transmissions: {e}")
+            return {"content": []}

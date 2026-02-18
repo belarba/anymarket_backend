@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Boolean, JSON
 from sqlalchemy.sql import func
 from .database import Base
+from sqlalchemy.dialects.postgresql import JSONB
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -413,98 +415,204 @@ class Stock(Base):
 
 
 class SkuMarketplace(Base):
+    """
+    Model para armazenar dados de SKUs nos marketplaces
+    Endpoint: /skus/marketplaces
+    """
     __tablename__ = "sku_marketplaces"
     
-    # Campos básicos
-    id = Column(Integer, primary_key=True, index=True)
-    anymarket_id = Column(String, index=True)
+    # Chave primária interna
+    id = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Informações da conta
-    account_name = Column(String)
-    id_account = Column(Integer)
+    # ID do Anymarket (identificador único da API)
+    anymarket_id = Column(String(50), nullable=False, unique=True, index=True)
     
-    # Marketplace
-    marketplace = Column(String, index=True)
-    id_in_marketplace = Column(String, index=True)
-    index_field = Column(Integer)  # Renomeado de 'index' para evitar conflito
+    # Campos principais
+    account_name = Column(String(255), nullable=True)
+    id_account = Column(Integer, nullable=True)
+    marketplace = Column(String(100), nullable=True, index=True)
+    id_in_marketplace = Column(String(255), nullable=True, index=True)
+    index = Column(Integer, nullable=True)
+    publication_status = Column(String(50), nullable=True, index=True)
+    marketplace_status = Column(String(100), nullable=True)
+    price = Column(Float, nullable=True)
+    price_factor = Column(Float, nullable=True)
+    discount_price = Column(Float, nullable=True)
+    permalink = Column(Text, nullable=True)
+    sku_in_marketplace = Column(String(255), nullable=True, index=True)
+    marketplace_item_code = Column(String(255), nullable=True)
     
-    # Status
-    publication_status = Column(String, index=True)
-    marketplace_status = Column(String)
+    # FIELDS expandidos
+    field_title = Column(String(500), nullable=True)
+    field_template = Column(Integer, nullable=True)
+    field_price_factor = Column(String(50), nullable=True)
+    field_discount_type = Column(String(50), nullable=True)
+    field_discount_value = Column(String(50), nullable=True)
+    field_has_discount = Column(Boolean, nullable=True)
+    field_concat_attributes = Column(Text, nullable=True)
+    field_delivery_type = Column(String(100), nullable=True)
+    field_shipment = Column(String(255), nullable=True)
+    field_cross_docking = Column(String(100), nullable=True)
+    field_custom_description = Column(Text, nullable=True)
+    field_ean = Column(String(100), nullable=True)
+    field_manufacturing_time = Column(String(50), nullable=True)
+    field_value = Column(String(100), nullable=True)
+    field_percent = Column(String(50), nullable=True)
     
-    # Preços
-    price = Column(Float)
-    price_factor = Column(Float)
-    discount_price = Column(Float)
+    # Campos de preço por nível (Mercado Livre)
+    field_bronze_price = Column(String(50), nullable=True)
+    field_bronze_price_factor = Column(String(50), nullable=True)
+    field_silver_price = Column(String(50), nullable=True)
+    field_silver_price_factor = Column(String(50), nullable=True)
+    field_gold_price = Column(String(50), nullable=True)
+    field_gold_price_factor = Column(String(50), nullable=True)
+    field_gold_premium_price = Column(String(50), nullable=True)
+    field_gold_premium_price_factor = Column(String(50), nullable=True)
+    field_gold_pro_price = Column(String(50), nullable=True)
+    field_gold_pro_price_factor = Column(String(50), nullable=True)
+    field_gold_special_price = Column(String(50), nullable=True)
+    field_gold_special_price_factor = Column(String(50), nullable=True)
+    field_free_price = Column(String(50), nullable=True)
+    field_free_price_factor = Column(String(50), nullable=True)
     
-    # Links e identificadores
-    permalink = Column(String)
-    sku_in_marketplace = Column(String)
-    marketplace_item_code = Column(String)
+    # Campos de configuração de venda
+    field_buying_mode = Column(String(50), nullable=True)
+    field_category_with_variation = Column(String(255), nullable=True)
+    field_condition = Column(String(50), nullable=True)
+    field_free_shipping = Column(Boolean, nullable=True)
+    field_listing_type_id = Column(String(100), nullable=True)
+    field_shipping_local_pick_up = Column(Boolean, nullable=True)
+    field_shipping_mode = Column(String(50), nullable=True)
+    field_measurement_chart_id = Column(String(100), nullable=True)
+    field_warranty_time = Column(String(50), nullable=True)
+    field_has_fulfillment = Column(Boolean, nullable=True)
+    field_official_store_id = Column(String(100), nullable=True)
+    field_ml_channels = Column(String(100), nullable=True)
+    field_is_main_sku = Column(Boolean, nullable=True)
+    field_is_match = Column(Boolean, nullable=True)
     
-    # Fields expandidos (principais)
-    field_title = Column(String)
-    field_template = Column(Integer)
-    field_price_factor = Column(String)
-    field_discount_type = Column(String)
-    field_discount_value = Column(String)
-    field_has_discount = Column(Boolean)
-    field_concat_attributes = Column(String)
-    field_delivery_type = Column(String)
-    field_shipment = Column(String)
-    field_cross_docking = Column(String)
-    field_custom_description = Column(Text)
-    field_ean = Column(String)
-    field_manufacturing_time = Column(String)
-    field_value = Column(String)
-    field_percent = Column(String)
-    
-    # Mercado Livre specific fields
-    field_bronze_price = Column(String)
-    field_bronze_price_factor = Column(String)
-    field_buying_mode = Column(String)
-    field_category_with_variation = Column(String)
-    field_condition = Column(String)
-    field_free_price = Column(String)
-    field_free_price_factor = Column(String)
-    field_free_shipping = Column(Boolean)
-    field_gold_premium_price = Column(String)
-    field_gold_premium_price_factor = Column(String)
-    field_gold_price = Column(String)
-    field_gold_price_factor = Column(String)
-    field_gold_pro_price = Column(String)
-    field_gold_pro_price_factor = Column(String)
-    field_gold_special_price = Column(String)
-    field_gold_special_price_factor = Column(String)
-    field_listing_type_id = Column(String)
-    field_shipping_local_pick_up = Column(Boolean)
-    field_shipping_mode = Column(String)
-    field_silver_price = Column(String)
-    field_silver_price_factor = Column(String)
-    field_measurement_chart_id = Column(String)
-    field_warranty_time = Column(String)
-    field_has_fulfillment = Column(Boolean)
-    field_official_store_id = Column(String)
-    field_ml_channels = Column(String)
-    field_is_main_sku = Column(Boolean)
-    field_is_match = Column(Boolean)
+    # Warnings
+    warnings_count = Column(Integer, nullable=True, default=0)
+    has_warnings = Column(Boolean, nullable=True, default=False)
     
     # Dados JSON completos
-    fields_data = Column(JSON)
-    attributes_data = Column(JSON)
-    warnings = Column(JSON)
+    fields_data = Column(JSONB, nullable=True)
+    attributes_data = Column(JSONB, nullable=True)
+    warnings_data = Column(JSONB, nullable=True)
     
-    # Chave única composta (anymarket_id + marketplace + id_in_marketplace)
-    sku_marketplace_key = Column(String, unique=True, index=True)
-    
-    # Status de sincronização
-    sync_status = Column(String, default="pending")
-    sync_error_message = Column(Text)
-    last_sync_date = Column(DateTime)
-    
-    # Metadados do sistema
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # Campos de controle
+    sync_status = Column(String(50), nullable=True, default='synced')
+    last_sync_date = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=True, server_default=func.now())
+    updated_at = Column(DateTime, nullable=True, onupdate=func.now())
     
     def __repr__(self):
-        return f"<SkuMarketplace(id='{self.anymarket_id}', marketplace='{self.marketplace}', status='{self.publication_status}')>"
+        return f"<SkuMarketplace(id={self.id}, anymarket_id={self.anymarket_id}, marketplace={self.marketplace})>"
+
+class Transmission(Base):
+    """
+    Model para armazenar dados de transmissões
+    Endpoint: /transmissions
+    """
+    __tablename__ = "transmissions"
+    
+    # Chave primária interna
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # ID do Anymarket
+    anymarket_id = Column(String(50), nullable=False, unique=True, index=True)
+    
+    # Campos principais
+    account_name = Column(String(255), nullable=True)
+    description = Column(Text, nullable=True)
+    model = Column(String(255), nullable=True)
+    video_url = Column(Text, nullable=True)
+    warranty_time = Column(Integer, nullable=True)
+    warranty_text = Column(Text, nullable=True)
+    
+    # Dimensões
+    height = Column(Float, nullable=True)
+    width = Column(Float, nullable=True)
+    weight = Column(Float, nullable=True)
+    length = Column(Float, nullable=True)
+    
+    # Status
+    status = Column(String(100), nullable=True, index=True)
+    transmission_message = Column(Text, nullable=True)
+    publication_status = Column(String(50), nullable=True, index=True)
+    marketplace_status = Column(String(100), nullable=True)
+    price_factor = Column(Float, nullable=True)
+    
+    # Category expandido
+    category_id = Column(String(50), nullable=True)
+    category_name = Column(String(255), nullable=True)
+    category_path = Column(Text, nullable=True)
+    
+    # Brand expandido
+    brand_id = Column(String(50), nullable=True)
+    brand_name = Column(String(255), nullable=True)
+    
+    # Product expandido
+    product_id = Column(String(50), nullable=True, index=True)
+    product_title = Column(String(500), nullable=True)
+    
+    # NBM expandido
+    nbm_id = Column(String(50), nullable=True)
+    nbm_description = Column(Text, nullable=True)
+    
+    # Origin expandido
+    origin_id = Column(String(50), nullable=True)
+    origin_description = Column(String(255), nullable=True)
+    
+    # SKU expandido
+    sku_id = Column(String(50), nullable=True, index=True)
+    sku_title = Column(String(500), nullable=True)
+    sku_partner_id = Column(String(100), nullable=True, index=True)
+    sku_ean = Column(String(100), nullable=True)
+    sku_price = Column(Float, nullable=True)
+    sku_amount = Column(Integer, nullable=True)
+    sku_discount_price = Column(Float, nullable=True)
+    
+    # SKU Variations (primeiro item expandido)
+    variation_id = Column(String(50), nullable=True)
+    variation_description = Column(String(255), nullable=True)
+    variation_type_id = Column(String(50), nullable=True)
+    variation_type_name = Column(String(255), nullable=True)
+    variation_visual = Column(Boolean, nullable=True)
+    total_variations = Column(Integer, nullable=True, default=0)
+    
+    # Characteristics (primeiro item expandido)
+    characteristic_index = Column(Integer, nullable=True)
+    characteristic_name = Column(String(255), nullable=True)
+    characteristic_value = Column(Text, nullable=True)
+    total_characteristics = Column(Integer, nullable=True, default=0)
+    
+    # Images (primeiro item expandido)
+    image_id = Column(String(50), nullable=True)
+    image_index = Column(Integer, nullable=True)
+    image_main = Column(Boolean, nullable=True)
+    image_url = Column(Text, nullable=True)
+    image_thumbnail_url = Column(Text, nullable=True)
+    image_status = Column(String(50), nullable=True)
+    image_status_message = Column(Text, nullable=True)
+    total_images = Column(Integer, nullable=True, default=0)
+    main_image_url = Column(Text, nullable=True)
+    
+    # Dados JSON completos
+    category_data = Column(JSON, nullable=True)
+    brand_data = Column(JSON, nullable=True)
+    product_data = Column(JSON, nullable=True)
+    nbm_data = Column(JSON, nullable=True)
+    origin_data = Column(JSON, nullable=True)
+    sku_data = Column(JSON, nullable=True)
+    characteristics_data = Column(JSON, nullable=True)
+    images_data = Column(JSON, nullable=True)
+    
+    # Campos de controle
+    sync_status = Column(String(50), nullable=True, default='synced')
+    last_sync_date = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=True, server_default=func.now())
+    updated_at = Column(DateTime, nullable=True, onupdate=func.now())
+    
+    def __repr__(self):
+        return f"<Transmission(id={self.id}, anymarket_id={self.anymarket_id}, status={self.status})>"

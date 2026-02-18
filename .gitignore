@@ -19,6 +19,9 @@ __pycache__/
 # Logs
 *.log
 
+# Relatórios gerados automaticamente
+daily_sync_summary_*.json
+
 # IDE
 .vscode/
 .idea/
